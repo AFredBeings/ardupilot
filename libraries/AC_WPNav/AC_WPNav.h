@@ -168,6 +168,9 @@ public:
     /// set_fast_waypoint - set to true to ignore the waypoint radius and consider the waypoint 'reached' the moment the intermediate point reaches it
     void set_fast_waypoint(bool fast) { _flags.fast_waypoint = fast; }
 
+    /// set clocked_waypoint - set to true if flightspeed is controlled by a target duration between origin and target wp
+    void set_clocked_waypoint(bool clocked) { _flags.clocked_waypoint = clocked; }
+
     /// update_wpnav - run the wp controller - should be called at 100hz or higher
     virtual bool update_wpnav();
 
@@ -259,6 +262,7 @@ protected:
         uint8_t new_wp_destination      : 1;    // true if we have just received a new destination.  allows us to freeze the position controller's xy feed forward
         SegmentType segment_type        : 1;    // active segment is either straight or spline
         uint8_t wp_yaw_set              : 1;    // true if yaw target has been set
+        uint8_t clocked_waypoint        : 1;    // true if flightspeed is controlled by a target duration between origin and target wp
     } _flags;
 
     /// calc_slow_down_distance - calculates distance before waypoint that target point should begin to slow-down assuming it is traveling at full speed

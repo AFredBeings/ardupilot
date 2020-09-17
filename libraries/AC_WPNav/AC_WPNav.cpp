@@ -89,6 +89,7 @@ AC_WPNav::AC_WPNav(const AP_InertialNav& inav, const AP_AHRS_View& ahrs, AC_PosC
     _flags.recalc_wp_leash = false;
     _flags.new_wp_destination = false;
     _flags.segment_type = SEGMENT_STRAIGHT;
+    _flags.clocked_waypoint = true;                                                                     // set to true for testing purpose
 
     // sanity check some parameters
     _wp_accel_cmss = MIN(_wp_accel_cmss, GRAVITY_MSS * 100.0f * tanf(ToRad(_attitude_control.lean_angle_max() * 0.01f)));
@@ -1090,8 +1091,7 @@ float AC_WPNav::get_slow_down_speed(float dist_from_dest_cm, float accel_cmss)
     if (dist_from_dest_cm <= 0) {
         return WPNAV_WP_TRACK_SPEED_MIN;
     }
-
-    // calculate desired speed near destination
+get_slow_down_speed
     float target_speed = safe_sqrt(dist_from_dest_cm * 4.0f * accel_cmss);
 
     // ensure desired speed never becomes too low
@@ -1105,6 +1105,12 @@ float AC_WPNav::get_slow_down_speed(float dist_from_dest_cm, float accel_cmss)
 /// wp_speed_update - calculates how to handle speed change requests
 void AC_WPNav::wp_speed_update(float dt)
 {
+    // check if clocked WP is aktiv
+    //if (_flags.clocked_waypoint) {
+    //    int _distance = 
+    //    return;
+    //}
+    
     // return if speed has not changed
     float curr_max_speed_xy_cms = _pos_control.get_max_speed_xy();
     if (is_equal(_wp_desired_speed_xy_cms, curr_max_speed_xy_cms)) {
