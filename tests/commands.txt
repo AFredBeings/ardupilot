@@ -1,0 +1,1 @@
+sim_vehicle.py -D --map --console -v ArduCopter -f quad -L Hornbach --add-param-file=/home/fred/GitHub/ardupilot/tests/Mission.parm
