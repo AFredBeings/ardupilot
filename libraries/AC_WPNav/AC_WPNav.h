@@ -151,6 +151,12 @@ public:
     void get_wp_stopping_point_xy(Vector3f& stopping_point) const;
     void get_wp_stopping_point(Vector3f& stopping_point) const;
 
+    /// update clocked speed factor regulary to adapt speed to progress along the route
+    void update_clocked_speed_factor(float track_covered);
+
+    /// update target speed for every new Waypoint
+    bool update_clocked_desired_speed();
+
     /// get_wp_distance_to_destination - get horizontal distance to destination in cm
     virtual float get_wp_distance_to_destination() const;
 
@@ -259,6 +265,7 @@ protected:
         uint8_t new_wp_destination      : 1;    // true if we have just received a new destination.  allows us to freeze the position controller's xy feed forward
         SegmentType segment_type        : 1;    // active segment is either straight or spline
         uint8_t wp_yaw_set              : 1;    // true if yaw target has been set
+        uint8_t clocked_waypoint        : 1;    // ture if navigationspeed shall be controlled by a target time
     } _flags;
 
     /// calc_slow_down_distance - calculates distance before waypoint that target point should begin to slow-down assuming it is traveling at full speed
@@ -323,6 +330,11 @@ protected:
     float       _track_speed;           // speed in cm/s along track
     float       _track_leash_length;    // leash length along track
     float       _slow_down_dist;        // vehicle should begin to slow down once it is within this distance from the destination
+
+    float       _clocked_desired_speed; // desired speed for clocked navigation
+    float       _clocked_speed_factor;  // factor clocked speed by current progressing
+    float       _track_time;            // current time between origin and destination
+    float       _track_desired_time;    // desired time from origin to destination
 
     // spline variables
     float       _spline_time;           // current spline time between origin and destination

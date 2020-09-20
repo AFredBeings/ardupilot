@@ -89,6 +89,7 @@ AC_WPNav::AC_WPNav(const AP_InertialNav& inav, const AP_AHRS_View& ahrs, AC_PosC
     _flags.recalc_wp_leash = false;
     _flags.new_wp_destination = false;
     _flags.segment_type = SEGMENT_STRAIGHT;
+    _flags.clocked_waypoint = false;
 
     // sanity check some parameters
     _wp_accel_cmss = MIN(_wp_accel_cmss, GRAVITY_MSS * 100.0f * tanf(ToRad(_attitude_control.lean_angle_max() * 0.01f)));
@@ -281,7 +282,18 @@ bool AC_WPNav::set_wp_origin_and_destination(const Vector3f& origin, const Vecto
     _flags.segment_type = SEGMENT_STRAIGHT;
     _flags.new_wp_destination = true;   // flag new waypoint so we can freeze the pos controller's feed forward and smooth the transition
     _flags.wp_yaw_set = false;
+ 
+    _clocked_speed_factor = 1;      // init factor as 1
+    _track_time = 0;                
+    _track_desired_time = 5;         // Desired time must be read in from the waypoint
 
+    // if the desired speed cannot be calculated WP will not be set clocked waypoint
+    if (update_clocked_desired_speed()) {
+        _flags.clocked_waypoint = true;
+    } else {
+        _flags.clocked_waypoint = false;
+    }
+ 
     // initialise the limited speed to current speed along the track
     const Vector3f &curr_vel = _inav.get_velocity();
     // get speed along track (note: we convert vertical speed into horizontal speed equivalent)
@@ -522,8 +534,38 @@ bool AC_WPNav::advance_wp_target_along_track(float dt)
         }
     }
 
+    // calculate target speed for current waypoint navigation
+    if (true) {     // add clocked waypoint check  
+        update_clocked_speed_factor(track_covered);
+        _wp_desired_speed_xy_cms = _clocked_desired_speed * _clocked_speed_factor;
+        wp_speed_update(dt);
+    }
+    // calculate time spend navigating to current waypoint
+    _track_time += dt;
+
     // successfully advanced along track
     return true;
+}
+
+/// 
+void AC_WPNav::update_clocked_speed_factor(float track_covered)
+{
+    if ((_track_desired_time > 0) && (_track_length > 0)) {
+        float new_speed_factor = _track_time / _track_desired_time * track_covered / _track_length;
+        _clocked_speed_factor = _clocked_speed_factor * 0.95 +  new_speed_factor * 0.05;
+    }
+}
+
+/// Calculate Clocked Waypoint target speed - To-Do: increase target speed by x to compensate for acceleration
+bool AC_WPNav::update_clocked_desired_speed()
+{
+    if (_track_desired_time > 0) {
+        _clocked_desired_speed = _track_length / _track_desired_time;
+        return true;
+    } else {
+        _clocked_desired_speed = 5000;
+        return false;
+    }
 }
 
 /// get_wp_distance_to_destination - get horizontal distance to destination in cm
