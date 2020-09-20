@@ -285,7 +285,7 @@ bool AC_WPNav::set_wp_origin_and_destination(const Vector3f& origin, const Vecto
  
     _clocked_speed_factor = 1;      // init factor as 1
     _track_time = 0;                
-    _track_desired_time = 5;         // Desired time must be read in from the waypoint
+    _track_desired_time = 30;         // Desired time must be read in from the waypoint
 
     // if the desired speed cannot be calculated WP will not be set clocked waypoint
     if (update_clocked_desired_speed()) {
@@ -535,7 +535,8 @@ bool AC_WPNav::advance_wp_target_along_track(float dt)
     }
 
     // calculate target speed for current waypoint navigation
-    if (true) {     // add clocked waypoint check  
+    bool wp_clocked_enbl = true;                                           // To-Do global parameter
+    if (wp_clocked_enbl) {     // add clocked waypoint check  
         update_clocked_speed_factor(track_covered);
         _wp_desired_speed_xy_cms = _clocked_desired_speed * _clocked_speed_factor;
         wp_speed_update(dt);
@@ -550,9 +551,10 @@ bool AC_WPNav::advance_wp_target_along_track(float dt)
 /// 
 void AC_WPNav::update_clocked_speed_factor(float track_covered)
 {
+    float wp_clocked_spd_ctrl_gain_P = 0.05;                                   // To-Do global parameter
     if ((_track_desired_time > 0) && (_track_length > 0)) {
         float new_speed_factor = _track_time / _track_desired_time * track_covered / _track_length;
-        _clocked_speed_factor = _clocked_speed_factor * 0.95 +  new_speed_factor * 0.05;
+        _clocked_speed_factor = _clocked_speed_factor * (1- wp_clocked_spd_ctrl_gain_P) +  new_speed_factor * wp_clocked_spd_ctrl_gain_P;
     }
 }
 
