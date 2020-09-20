@@ -430,6 +430,15 @@ bool AC_WPNav::advance_wp_target_along_track(float dt)
     // get speed along track
     float speed_along_track = curr_vel.x * _pos_delta_unit.x + curr_vel.y * _pos_delta_unit.y + curr_vel.z * _pos_delta_unit.z;
 
+    // control speed for clocked waypoints
+    if (_flags.clocked_waypoint) {
+        float _clocked_speed = (get_wp_distance_to_destination() + track_covered) / 10;
+        // int _clocked_speed = (track_desired_max - track_covered) / 100;
+        set_speed_xy(_clocked_speed);
+    }
+    // To-Do: currently max vel parameter are not considered
+
+
     // calculate point at which velocity switches from linear to sqrt
     float linear_velocity = _pos_control.get_max_speed_xy();
     float kP = _pos_control.get_pos_xy_p().kP();
@@ -1091,7 +1100,6 @@ float AC_WPNav::get_slow_down_speed(float dist_from_dest_cm, float accel_cmss)
     if (dist_from_dest_cm <= 0) {
         return WPNAV_WP_TRACK_SPEED_MIN;
     }
-get_slow_down_speed
     float target_speed = safe_sqrt(dist_from_dest_cm * 4.0f * accel_cmss);
 
     // ensure desired speed never becomes too low
@@ -1105,12 +1113,6 @@ get_slow_down_speed
 /// wp_speed_update - calculates how to handle speed change requests
 void AC_WPNav::wp_speed_update(float dt)
 {
-    // check if clocked WP is aktiv
-    //if (_flags.clocked_waypoint) {
-    //    int _distance = 
-    //    return;
-    //}
-    
     // return if speed has not changed
     float curr_max_speed_xy_cms = _pos_control.get_max_speed_xy();
     if (is_equal(_wp_desired_speed_xy_cms, curr_max_speed_xy_cms)) {
