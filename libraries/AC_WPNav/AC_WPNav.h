@@ -152,7 +152,7 @@ public:
     void get_wp_stopping_point(Vector3f& stopping_point) const;
 
     /// update clocked speed factor regulary to adapt speed to progress along the route
-    void update_clocked_speed_factor(float track_covered);
+    bool update_clocked_speed_factor(float track_covered);
 
     /// update target speed for every new Waypoint
     bool update_clocked_desired_speed();
