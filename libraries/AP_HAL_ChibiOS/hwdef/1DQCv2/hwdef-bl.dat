@@ -2,7 +2,7 @@
 # mRo Pixracer board. This is a fmuv4 board
 
 # MCU class and specific type
-MCU STM32F4xx STM32F427xx
+MCU STM32F4xx STM32F437xx
 
 # board ID for firmware load
 APJ_BOARD_ID 11
